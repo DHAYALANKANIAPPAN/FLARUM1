@@ -1,121 +1,207 @@
-const API_BASE = '/api';
-let uploadedFileUrl = '';
+const API_BASE_URL = window.location.origin + '/api';
+
+let currentFilter = 'recent';
+let currentUser = JSON.parse(localStorage.getItem('flarum_user')) || null;
+let authToken = localStorage.getItem('flarum_token') || null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetchDiscussions();
-  setupModalHandlers();
-  setupFormSubmit();
-  setupFileUpload();
+    updateAuthUI();
+    loadDiscussions();
 });
 
-async function fetchDiscussions() {
-  const container = document.getElementById('discussionList');
-  try {
-    const res = await fetch(`${API_BASE}/discussions?include=user`);
-    const json = await res.json();
-    
-    if (!json.data || json.data.length === 0) {
-      container.innerHTML = '<div class="loading-spinner">No discussions found. Start one!</div>';
-      return;
+// Update Header Authentication UI
+function updateAuthUI() {
+    const authSection = document.getElementById('auth-section');
+    if (currentUser && authToken) {
+        authSection.innerHTML = `
+            <span class="user-badge">${currentUser.isAdmin ? '👑 Admin' : '👤'} ${currentUser.username}</span>
+            <button class="btn-secondary" onclick="handleLogout()">Logout</button>
+        `;
+    } else {
+        authSection.innerHTML = `
+            <button class="btn-secondary" onclick="openModal('login-modal')">Sign In</button>
+            <button class="btn-primary" onclick="openModal('register-modal')">Sign Up</button>
+        `;
     }
-
-    container.innerHTML = json.data.map(disc => {
-      const title = disc.attributes.title;
-      const commentCount = disc.attributes.commentCount || 1;
-      const user = json.included?.find(i => i.type === 'users' && i.id === disc.relationships?.user?.data?.id);
-      const username = user ? user.attributes.username : 'Anonymous';
-      const initial = username.charAt(0).toUpperCase();
-
-      return `
-        <div class="DiscussionListItem">
-          <div class="DiscussionListItem-author">
-            <div class="Avatar">${initial}</div>
-            <div>
-              <a href="#" class="DiscussionListItem-title">${escapeHTML(title)}</a>
-              <div class="DiscussionListItem-info">Started by <strong>${username}</strong></div>
-            </div>
-          </div>
-          <div class="DiscussionListItem-stats">
-            <span><i class="fa-regular fa-comment"></i> ${commentCount}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
-  } catch (err) {
-    container.innerHTML = '<div class="loading-spinner" style="color:#ef4444;">Failed to load discussions from Flarum API.</div>';
-  }
 }
 
-function setupFileUpload() {
-  const fileInput = document.getElementById('imageUpload');
-  const status = document.getElementById('uploadStatus');
+// Switch between Feed Tabs (Recent, Best Answer, Pinned)
+function loadFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
 
-  fileInput.addEventListener('change', async () => {
-    if (!fileInput.files[0]) return;
-    status.innerText = 'Uploading image...';
-
-    const formData = new FormData();
-    formData.append('files[]', fileInput.files[0]);
-
-    try {
-      const res = await fetch(`${API_BASE}/fof/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.data && data.data[0]) {
-        uploadedFileUrl = data.data[0].attributes.url;
-        status.innerText = 'Image attached successfully!';
-        status.style.color = '#22c55e';
-      }
-    } catch (e) {
-      status.innerText = 'Image upload failed.';
-      status.style.color = '#ef4444';
-    }
-  });
+    const titles = {
+        'recent': 'Recent Discussions',
+        'best-answer': 'Discussions with Best Answer Marked',
+        'pinned': 'Pinned Announcements'
+    };
+    document.getElementById('feed-title').innerText = titles[filter];
+    loadDiscussions();
 }
 
-function setupFormSubmit() {
-  const form = document.getElementById('createDiscussionForm');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('discussionTitle').value;
-    let content = document.getElementById('discussionContent').value;
+// Fetch discussions from Flarum API based on tab
+async function loadDiscussions() {
+    const feed = document.getElementById('discussions-list');
+    feed.innerHTML = '<p class="loading">Loading discussions...</p>';
 
-    if (uploadedFileUrl) {
-      content += `\n\n![Uploaded Image](${uploadedFileUrl})`;
-    }
+    let queryParam = '-createdAt'; // Default: Recent
+    if (currentFilter === 'pinned') queryParam = '-isSticky';
+    if (currentFilter === 'best-answer') queryParam = '-hasBestAnswer';
 
     try {
-      const res = await fetch(`${API_BASE}/discussions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: {
-            attributes: { title, content }
-          }
-        })
-      });
-
-      if (res.ok) {
-        document.getElementById('modalBackdrop').style.display = 'none';
-        form.reset();
-        uploadedFileUrl = '';
-        document.getElementById('uploadStatus').innerText = '';
-        fetchDiscussions();
-      }
+        const response = await fetch(`${API_BASE_URL}/discussions?sort=${queryParam}&include=user,firstPost`);
+        if (!response.ok) throw new Error('API fetch failed');
+        
+        const data = await response.json();
+        renderFeed(data.data || []);
     } catch (err) {
-      alert('Error creating discussion');
+        feed.innerHTML = '<p class="error-msg">Failed to load discussions from Flarum API.</p>';
     }
-  });
 }
 
-function setupModalHandlers() {
-  const backdrop = document.getElementById('modalBackdrop');
-  document.getElementById('openModalBtn').onclick = () => backdrop.style.display = 'flex';
-  document.getElementById('closeModalBtn').onclick = () => backdrop.style.display = 'none';
+// Render Discussions Feed with Admin Controls
+function renderFeed(discussions) {
+    const feed = document.getElementById('discussions-list');
+    if (discussions.length === 0) {
+        feed.innerHTML = '<p class="empty-msg">No discussions found in this section.</p>';
+        return;
+    }
+
+    feed.innerHTML = discussions.map(item => {
+        const title = item.attributes.title;
+        const id = item.id;
+        const isSticky = item.attributes.isSticky;
+        const hasBestAnswer = item.attributes.hasBestAnswer;
+
+        let badges = '';
+        if (isSticky) badges += '<span class="badge pinned">📌 Pinned</span> ';
+        if (hasBestAnswer) badges += '<span class="badge best-answer">✅ Best Answer</span> ';
+
+        let adminActions = '';
+        if (currentUser && currentUser.isAdmin) {
+            adminActions = `
+                <button class="btn-delete" onclick="deleteDiscussion('${id}')">🗑️ Delete</button>
+            `;
+        }
+
+        return `
+            <div class="discussion-card">
+                <div class="card-header">
+                    <h4>${badges}${title}</h4>
+                    ${adminActions}
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
+// Admin API Action: Delete Discussion
+async function deleteDiscussion(discussionId) {
+    if (!confirm('Are you sure you want to delete this discussion as an Admin?')) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/discussions/${discussionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Token ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (res.ok) {
+            alert('Discussion deleted successfully!');
+            loadDiscussions();
+        } else {
+            alert('Failed to delete discussion. Check admin permissions.');
+        }
+    } catch (e) {
+        alert('Error connecting to backend.');
+    }
 }
+
+// Login Handler
+async function handleLogin(e) {
+    e.preventDefault();
+    const identification = document.getElementById('login-identification').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identification, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            authToken = data.token;
+            localStorage.setItem('flarum_token', authToken);
+
+            // Fetch user info & permissions
+            const userRes = await fetch(`${API_BASE_URL}/users/${data.userId}`, {
+                headers: { 'Authorization': `Token ${authToken}` }
+            });
+            const userData = await userRes.json();
+            
+            // Check if user belongs to admin group (Group ID 1 in Flarum)
+            const isAdmin = userData.data.relationships?.groups?.data?.some(g => g.id === "1") || false;
+
+            currentUser = {
+                id: data.userId,
+                username: identification,
+                isAdmin: isAdmin
+            };
+
+            localStorage.setItem('flarum_user', JSON.stringify(currentUser));
+            closeModal('login-modal');
+            updateAuthUI();
+            loadDiscussions();
+        } else {
+            alert('Login failed: ' + (data.errors ? data.errors[0].detail : 'Invalid credentials'));
+        }
+    } catch (err) {
+        alert('Login server error.');
+    }
+}
+
+// User Registration Handler
+async function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('reg-username').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { attributes: { username, email, password } } })
+        });
+
+        if (res.ok) {
+            alert('Registration successful! Please sign in.');
+            closeModal('register-modal');
+            openModal('login-modal');
+        } else {
+            const data = await res.json();
+            alert('Registration failed: ' + (data.errors ? data.errors[0].detail : 'Validation error'));
+        }
+    } catch (err) {
+        alert('Registration server error.');
+    }
+}
+
+// Logout
+function handleLogout() {
+    localStorage.removeItem('flarum_token');
+    localStorage.removeItem('flarum_user');
+    currentUser = null;
+    authToken = null;
+    updateAuthUI();
+    loadDiscussions();
+}
+
+// Utility Modal Helpers
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
