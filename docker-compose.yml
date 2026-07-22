@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+
+  db:
+    image: mariadb:10.11
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+    command: --innodb-buffer-pool-size=128M
+    volumes:
+      - flarum_dbdata:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8000:80"   # Mapped to 8000 (leaves 8080 free for Jenkins)
+    volumes:
+      - ./frontend:/var/www/frontend
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+volumes:
+  flarum_dbdata:
