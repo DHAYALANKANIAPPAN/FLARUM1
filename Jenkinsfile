@@ -6,12 +6,7 @@ pipeline {
         REGISTRY_TAG = "flarum:${BUILD_NUMBER}"
     }
 
-   stage('Checkout Code') {
-    steps {
-        git branch: 'main', url: 'https://github.com/DHAYALANKANIAPPAN/FLARUM1.git'
-    }
-}
-
+    stages {
         stage('Lint Compose Syntax') {
             steps {
                 sh 'docker compose -f docker-compose.yml config'
@@ -28,7 +23,7 @@ pipeline {
             steps {
                 sh '''
                     docker compose -f docker-compose.yml up -d --build
-                    docker exec $(docker ps -q -f name=app) php flarum cache:clear
+                    docker exec $(docker ps -q -f name=app) php flarum cache:clear || true
                 '''
             }
         }
