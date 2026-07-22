@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberSecurity Forum</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="App-header">
+    <div class="container Header-controls">
+      <div class="Header-title">
+        <a href="index.html"><i class="fa-solid fa-shield-halved logo-icon"></i> <span class="title-text">CyberSecurity Forum</span></a>
+      </div>
+      <div class="Header-search">
+        <input type="text" id="searchInput" placeholder="Search forum..." class="Search-input">
+      </div>
+      <div class="Header-user">
+        <span class="user-badge"><i class="fa-solid fa-user"></i> Community Member</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="App-content container">
+    <!-- Left Sidebar -->
+    <aside class="App-nav">
+      <button class="Button Button--primary IndexPage-newDiscussion" id="openModalBtn">
+        <i class="fa-solid fa-pen-to-square"></i> Start a Discussion
+      </button>
+      <nav class="SideNav">
+        <ul>
+          <li class="active"><a href="index.html"><i class="fa-solid fa-comments"></i> All Discussions</a></li>
+          <li><a href="leaderboard.html"><i class="fa-solid fa-trophy"></i> Leaderboard / Scoreboard</a></li>
+          <li class="nav-divider"></li>
+          <li class="nav-header">Categories</li>
+          <li><a href="#"><span class="tag-dot cyan"></span> CTF Writeups</a></li>
+          <li><a href="#"><span class="tag-dot purple"></span> Network Security</a></li>
+          <li><a href="#"><span class="tag-dot green"></span> Web Exploitation</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Discussion Feed Column -->
+    <main class="App-main">
+      <div class="IndexPage-toolbar">
+        <div class="IndexPage-toolbar-action">
+          <h2>Discussions</h2>
+        </div>
+      </div>
+      <div class="DiscussionList" id="discussionList">
+        <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading topics...</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Discussion Modal -->
+  <div class="Modal-backdrop" id="modalBackdrop">
+    <div class="Modal">
+      <div class="Modal-header">
+        <h3>Start a Discussion</h3>
+        <button class="Modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="createDiscussionForm">
+        <div class="Modal-body">
+          <input type="text" id="discussionTitle" placeholder="Discussion Title" class="FormControl" required>
+          <textarea id="discussionContent" placeholder="Write your question or writeup here (Markdown supported)..." class="FormControl Textarea" rows="6" required></textarea>
+          
+          <div class="Upload-section">
+            <label for="imageUpload" class="Button Button--secondary">
+              <i class="fa-solid fa-paperclip"></i> Attach Image
+            </label>
+            <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+            <span id="uploadStatus" class="upload-status"></span>
+          </div>
+        </div>
+        <div class="Modal-footer">
+          <button type="submit" class="Button Button--primary">Post Discussion (+5 Points)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
