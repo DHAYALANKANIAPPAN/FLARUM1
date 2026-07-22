@@ -10,6 +10,8 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     netcat-openbsd \
+    git \
+    unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo_mysql zip intl opcache
 
@@ -17,11 +19,10 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-RUN composer create-project flarum/flarum . --stability=beta \
-    && composer require fof/upload fof/best-answer huseyinfiliz/leaderboard
-
+# Copy Nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
+# Configure Supervisor
 RUN mkdir -p /etc/supervisor.d/
 COPY <<EOF /etc/supervisor.d/supervisord.ini
 [supervisord]
@@ -38,11 +39,11 @@ autostart=true
 autorestart=true
 EOF
 
-RUN mkdir -p /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/public
+# Copy and set up entrypoint script
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 80
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]
