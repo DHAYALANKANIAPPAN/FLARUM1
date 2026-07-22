@@ -14,7 +14,7 @@ pipeline {
 
         stage('Deploy to Remote EC2') {
             steps {
-                sshagent(credentials: ['ec2-ssh-key']) { {
+                sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@16.16.159.159 << "EOF"
                             if [ ! -d FLARUM1 ]; then
