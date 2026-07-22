@@ -6,12 +6,11 @@ pipeline {
         REGISTRY_TAG = "flarum:${BUILD_NUMBER}"
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/YOUR_USERNAME/flarum-deployment.git'
-            }
-        }
+   stage('Checkout Code') {
+    steps {
+        git branch: 'main', url: 'https://github.com/DHAYALANKANIAPPAN/FLARUM1.git'
+    }
+}
 
         stage('Lint Compose Syntax') {
             steps {
