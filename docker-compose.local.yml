@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - DB_HOST=db
+      - DB_NAME=flarum
+      - DB_USER=flarum_user
+      - DB_PASS=flarum_pass
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: flarum
+      MYSQL_USER: flarum_user
+      MYSQL_PASSWORD: flarum_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:80"   # Localhost URL will be http://localhost:8000
+    volumes:
+      - ./frontend:/var/www/frontend
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
