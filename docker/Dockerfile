@@ -13,18 +13,16 @@ RUN apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo_mysql zip intl opcache
 
-# Copy the entire Flarum build from Stage 1
+# Copy everything built from Stage 1 into the runtime container
 COPY --from=builder /app /var/www/html
 
-# Ensure required directories exist and permissions are correct
 RUN mkdir -p /var/www/html/storage \
-    && mkdir -p /var/www/html/public
-
-COPY docker/custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
-COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
-
-RUN chmod +x /usr/local/bin/docker-entrypoint \
     && chown -R www-data:www-data /var/www/html
+
+COPY custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+
+RUN chmod +x /usr/local/bin/docker-entrypoint
 
 ENTRYPOINT ["docker-entrypoint"]
 CMD ["php-fpm"]
