@@ -5,16 +5,28 @@ services:
       dockerfile: docker/Dockerfile
     container_name: flarum1-app
     restart: always
-    ports:
-      - "8000:80"
     environment:
       - DB_HOST=db
       - DB_NAME=flarum
       - DB_USER=flarum
       - DB_PASS=secret
       - APP_URL=http://16.16.159.159:8000
+    volumes:
+      - flarum_data:/var/www/html
     depends_on:
       - db
+
+  nginx:
+    image: nginx:alpine
+    container_name: flarum1-nginx-1
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - flarum_data:/var/www/html
+    depends_on:
+      - app
 
   db:
     image: mariadb:10.11
@@ -30,3 +42,4 @@ services:
 
 volumes:
   db_data:
+  flarum_data:
