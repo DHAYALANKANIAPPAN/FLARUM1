@@ -2,32 +2,31 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'flarum-headless-app'
+        EC2_IP = '16.16.159.159'
     }
 
     stages {
         stage('Lint Compose Syntax') {
             steps {
-                // Load environment variables from .env file or default them so warnings don't throw off compose
                 sh 'docker compose -f docker-compose.yml config'
             }
         }
 
-        stage('Build Image Artifact') {
+        stage('Deploy to Remote EC2') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} -f docker/Dockerfile ."
-            }
-        }
-
-        stage('Deploy Stack to EC2') {
-            steps {
-                sh '''
-                    # Copy .env.example to .env if .env doesn't exist yet
-                    if [ ! -f .env ]; then cp .env.example .env; fi
-                    
-                    docker compose -f docker-compose.yml up -d --build
-                    docker exec $(docker ps -q -f name=app) php flarum cache:clear || true
-                '''
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} "
+                            if [ ! -d FLARUM1 ]; then
+                                git clone https://github.com/DHAYALANKANIAPPAN/FLARUM1.git
+                            fi
+                            cd FLARUM1
+                            git pull origin main
+                            if [ ! -f .env ]; then cp .env.example .env; fi
+                            docker compose -f docker-compose.yml up -d --build
+                        "
+                    '''
+                }
             }
         }
     }
