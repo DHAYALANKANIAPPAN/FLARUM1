@@ -5,6 +5,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: flarum1-app
     restart: always
+    expose:
+      - "9000"
     environment:
       - DB_HOST=db
       - DB_NAME=flarum
