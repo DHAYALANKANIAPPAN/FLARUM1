@@ -18,9 +18,14 @@ RUN apk add --no-cache \
 
 COPY --from=builder /app /var/www/html
 
-# Ensure required directories exist before setting permissions
+# Ensure required directories (including frontend SPA root) exist before setting permissions
 RUN mkdir -p /var/www/html/assets \
-    && mkdir -p /var/www/html/storage
+    && mkdir -p /var/www/html/storage \
+    && mkdir -p /var/www/html/frontend
+
+# Optional: If you have static frontend build files in your repository under a 'frontend' or 'public_html' folder,
+# you can copy them directly into the image container like this:
+# COPY ./frontend /var/www/html/frontend
 
 COPY docker/custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
