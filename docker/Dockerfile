@@ -8,7 +8,7 @@ RUN composer create-project flarum/flarum . --stability=beta
 RUN composer require fof/upload fof/best-answer huseyinfiliz/leaderboard
 
 # Stage 2: Runtime PHP-FPM
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 WORKDIR /var/www/html
 
 RUN apk add --no-cache \
@@ -17,6 +17,11 @@ RUN apk add --no-cache \
     && docker-php-ext-install gd pdo_mysql zip intl opcache
 
 COPY --from=builder /app /var/www/html
+
+# Ensure required directories exist before setting permissions
+RUN mkdir -p /var/www/html/assets \
+    && mkdir -p /var/www/html/storage
+
 COPY docker/custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 
