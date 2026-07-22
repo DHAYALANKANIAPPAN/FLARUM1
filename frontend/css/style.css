@@ -1,0 +1,70 @@
+/* Flarum Modern Dark Design System */
+:root {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --accent-gold: #fbbf24;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-main); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+
+/* Header */
+.App-header { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); height: 60px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
+.Header-controls { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+.Header-title a { color: var(--text-main); text-decoration: none; font-size: 1.2rem; font-weight: bold; }
+.logo-icon { color: var(--primary); margin-right: 8px; }
+.Search-input { background: #0f172a; border: 1px solid var(--border-color); color: white; padding: 8px 16px; border-radius: 20px; width: 250px; outline: none; }
+
+/* Grid Layout */
+.App-content { display: grid; grid-template-columns: 240px 1fr; gap: 30px; margin-top: 30px; }
+
+/* Buttons & Sidebar */
+.Button { display: inline-block; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: background 0.2s; }
+.Button--primary { background: var(--primary); color: white; }
+.Button--primary:hover { background: var(--primary-hover); }
+.Button--secondary { background: #334155; color: white; }
+.IndexPage-newDiscussion { width: 100%; margin-bottom: 20px; }
+
+.SideNav ul { list-style: none; }
+.SideNav li a { display: block; padding: 10px 12px; color: var(--text-muted); text-decoration: none; border-radius: 6px; font-weight: 500; }
+.SideNav li.active a, .SideNav li a:hover { background: var(--card-bg); color: var(--text-main); }
+.SideNav .nav-divider { height: 1px; background: var(--border-color); margin: 15px 0; }
+.SideNav .nav-header { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 8px; padding-left: 12px; }
+.tag-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+.cyan { background: #06b6d4; } .purple { background: #a855f7; } .green { background: #22c55e; }
+
+/* Discussions */
+.DiscussionListItem { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
+.DiscussionListItem:hover { border-color: var(--primary); }
+.DiscussionListItem-author { display: flex; align-items: center; gap: 12px; }
+.Avatar { width: 42px; height: 42px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+.DiscussionListItem-title { font-size: 1.05rem; font-weight: 600; color: var(--text-main); text-decoration: none; display: block; margin-bottom: 4px; }
+.DiscussionListItem-info { font-size: 0.85rem; color: var(--text-muted); }
+.DiscussionListItem-stats { display: flex; gap: 15px; color: var(--text-muted); font-size: 0.9rem; }
+.loading-spinner { padding: 40px; text-align: center; color: var(--text-muted); }
+
+/* Modal */
+.Modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: center; }
+.Modal { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 550px; padding: 24px; }
+.Modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.Modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+.FormControl { width: 100%; background: #0f172a; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; outline: none; }
+.Textarea { resize: vertical; }
+.Upload-section { margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.upload-status { font-size: 0.85rem; }
+
+/* Leaderboard */
+.LeaderboardTableContainer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-top: 20px; }
+.LeaderboardTable { width: 100%; border-collapse: collapse; text-align: left; }
+.LeaderboardTable th, .LeaderboardTable td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
+.LeaderboardTable th { background: #0f172a; color: var(--text-muted); font-weight: 600; }
+.rank-badge { font-weight: bold; padding: 4px 10px; border-radius: 6px; }
+.rank-1 { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); }
+.highlight-gold { color: var(--accent-gold); }
