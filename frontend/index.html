@@ -8,17 +8,20 @@
 </head>
 <body>
     <!-- Top Navigation Header -->
-    <header class="navbar">
-        <div class="logo">
-            <span class="logo-icon">🛡️</span> CyberSecurity Forum
-        </div>
-        <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Search forum...">
-        </div>
-        <div class="auth-section" id="auth-section">
-            <!-- Dynamically filled by app.js: Login/Register OR User Badge/Logout -->
-        </div>
-    </header>
+<header class="navbar">
+    <div class="logo">
+        <span class="logo-icon">🛡️</span> CyberSecurity Forum
+    </div>
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search forum...">
+    </div>
+    
+    <!-- Updated Auth Section with default buttons -->
+    <div class="auth-section" id="auth-section">
+        <button class="btn-secondary" onclick="openModal('login-modal')">Sign In</button>
+        <button class="btn-primary" onclick="openModal('register-modal')">Sign Up</button>
+    </div>
+</header>
 
     <div class="main-container">
         <!-- Sidebar Navigation -->
