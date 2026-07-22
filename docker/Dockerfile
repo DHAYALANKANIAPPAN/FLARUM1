@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo_mysql zip intl opcache
 
-# Copy everything built from Stage 1 into the runtime container
+# Copy built files
 COPY --from=builder /app /var/www/html
 
 RUN mkdir -p /var/www/html/storage \
