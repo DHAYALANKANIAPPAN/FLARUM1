@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard - CyberSecurity Forum</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header class="App-header">
+    <div class="container Header-controls">
+      <div class="Header-title">
+        <a href="index.html"><i class="fa-solid fa-shield-halved logo-icon"></i> <span class="title-text">CyberSecurity Forum</span></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="App-content container">
+    <aside class="App-nav">
+      <a href="index.html" class="Button Button--secondary" style="width: 100%; text-align: center; margin-bottom: 20px;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Forum
+      </a>
+      <nav class="SideNav">
+        <ul>
+          <li><a href="index.html"><i class="fa-solid fa-comments"></i> All Discussions</a></li>
+          <li class="active"><a href="leaderboard.html"><i class="fa-solid fa-trophy"></i> Leaderboard / Scoreboard</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="App-main">
+      <div class="Leaderboard-header">
+        <h2><i class="fa-solid fa-trophy highlight-gold"></i> Community Scoreboard</h2>
+        <p>Earn points by asking questions (+5), posting answers (+2), and getting accepted best answers (+10)!</p>
+      </div>
+
+      <div class="LeaderboardTableContainer">
+        <table class="LeaderboardTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>User</th>
+              <th>Discussions</th>
+              <th>Answers</th>
+              <th>Total Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <tr><td colspan="5" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching rankings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/leaderboard.js"></script>
+</body>
+</html>
