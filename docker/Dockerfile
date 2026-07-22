@@ -1,10 +1,7 @@
 # Stage 1: Build Flarum & extensions
 FROM composer:2.6 AS builder
 WORKDIR /app
-
 RUN composer create-project flarum/flarum . --stability=beta
-
-# Install Flarum plugins (upload, best-answer, leaderboard)
 RUN composer require fof/upload fof/best-answer huseyinfiliz/leaderboard
 
 # Stage 2: Runtime PHP-FPM
@@ -16,15 +13,12 @@ RUN apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo_mysql zip intl opcache
 
+# Copy the entire Flarum build from Stage 1
 COPY --from=builder /app /var/www/html
 
-# Ensure required directories exist
-RUN mkdir -p /var/www/html/assets \
-    && mkdir -p /var/www/html/storage \
-    && mkdir -p /var/www/html/frontend
-
-# CRITICAL: Copy your actual local frontend folder (which contains index.html) into the container
-COPY ./frontend /var/www/html/frontend
+# Ensure required directories exist and permissions are correct
+RUN mkdir -p /var/www/html/storage \
+    && mkdir -p /var/www/html/public
 
 COPY docker/custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
