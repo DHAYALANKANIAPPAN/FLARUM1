@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@16.16.159.159 << 'EOF'
+                        ssh -o StrictHostKeyChecking=no ubuntu@54.196.68.171 << 'EOF'
                             if [ ! -d FLARUM1 ]; then
                                 git clone https://github.com/DHAYALANKANIAPPAN/FLARUM1.git
                             fi
