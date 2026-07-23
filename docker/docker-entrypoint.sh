@@ -9,18 +9,36 @@ done
 echo "[entrypoint] Database is reachable."
 
 if [ ! -f config.php ]; then
-  echo "[entrypoint] No config.php — running Flarum installer..."
-  php flarum install --no-interaction \
-    --baseUrl="${APP_URL}" \
-    --databaseHost="${DB_HOST}" \
-    --databaseName="${DB_NAME}" \
-    --databaseUser="${DB_USER}" \
-    --databasePassword="${DB_PASS}" \
-    --adminUser="${FLARUM_ADMIN_USER:-admin}" \
-    --adminPassword="${FLARUM_ADMIN_PASSWORD:-changeme}" \
-    --adminEmail="${FLARUM_ADMIN_EMAIL:-admin@example.com}" \
-    --title="${FLARUM_FORUM_TITLE:-Community Forum}"
+  echo "[entrypoint] No config.php — generating automated configuration..."
+  
+  # Write out the Flarum config.php file programmatically using environment variables
+  cat <<PHP > config.php
+<?php
+return [
+    'database' => [
+        'driver'    => 'mysql',
+        'host'      => '${DB_HOST}',
+        'database'  => '${DB_NAME}',
+        'username'  => '${DB_USER}',
+        'password'  => '${DB_PASS}',
+        'charset'   => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix'    => 'flarum_',
+        'port'      => '3306',
+        'strict'    => true,
+        'engine'    => 'InnoDB',
+    ],
+    'url'     => '${APP_URL}',
+    'paths'   => [
+        'api'   => 'api',
+        'admin' => 'admin',
+    ],
+];
+PHP
 
+  echo "[entrypoint] Running database migrations and enabling extensions..."
+  php flarum migrate || true
+  
   php flarum extension:enable fof-upload || true
   php flarum extension:enable fof-best-answer || true
   php flarum extension:enable huseyinfiliz-leaderboard || true
