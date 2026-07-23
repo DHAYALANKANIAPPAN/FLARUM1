@@ -3,11 +3,10 @@ services:
     container_name: flarum1-db-1
     image: mariadb:10.11
     environment:
-      APP_URL: "http://54.196.68.171:8000"
-      DB_HOST: db
-      DB_NAME: flarum
-      DB_USER: flarum
-      DB_PASS: secret
+      MYSQL_DATABASE: flarum
+      MYSQL_USER: flarum
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -26,7 +25,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      APP_URL: "http://16.16.159.159:8000"
+      APP_URL: "http://54.196.68.171:8000"
       DB_HOST: db
       DB_NAME: flarum
       DB_USER: flarum
@@ -34,6 +33,7 @@ services:
     volumes:
       - flarum_public:/var/www/html/public
       - flarum_storage:/var/www/html/storage
+      - flarum_data:/var/www/html
     restart: always
 
   nginx:
@@ -54,3 +54,4 @@ volumes:
     name: flarum1_db_data
   flarum_public:
   flarum_storage:
+  flarum_data:
