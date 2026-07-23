@@ -3,10 +3,11 @@ services:
     container_name: flarum1-db-1
     image: mariadb:10.11
     environment:
-      MYSQL_DATABASE: flarum
-      MYSQL_USER: flarum
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: rootsecret
+      APP_URL: "http://54.196.68.171:8000"
+      DB_HOST: db
+      DB_NAME: flarum
+      DB_USER: flarum
+      DB_PASS: secret
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
