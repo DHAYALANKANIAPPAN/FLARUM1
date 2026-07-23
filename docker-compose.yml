@@ -1,5 +1,4 @@
-services:
-  db:
+db:
     container_name: flarum1-db-1
     image: mariadb:10.11
     environment:
@@ -9,8 +8,11 @@ services:
       MYSQL_ROOT_PASSWORD: rootsecret
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - default
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "flarum", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: always
 
   app:
@@ -20,7 +22,7 @@ services:
     container_name: flarum1-app
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy   # <-- was service_started
     environment:
       APP_URL: http://16.16.159.159:8000
       DB_HOST: db
@@ -30,31 +32,4 @@ services:
     volumes:
       - flarum_public:/var/www/html/public
       - flarum_storage:/var/www/html/storage
-    networks:
-      - default
     restart: always
-
-  nginx:
-    container_name: flarum1-nginx-1
-    image: nginx:alpine
-    depends_on:
-      app:
-        condition: service_started
-    ports:
-      - "8000:80"
-    volumes:
-      - flarum_public:/var/www/html/public:ro
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - default
-    restart: always
-
-networks:
-  default:
-    name: flarum1_default
-
-volumes:
-  db_data:
-    name: flarum1_db_data
-  flarum_public:
-  flarum_storage:
