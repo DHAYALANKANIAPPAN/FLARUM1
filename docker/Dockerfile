@@ -19,8 +19,6 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# This is the step that installs Flarum and creates public/ — it was
-# missing before, and still missing in the supervisor version.
 RUN composer create-project flarum/flarum . --no-interaction --no-dev --prefer-dist \
     && composer require \
         fof/upload \
