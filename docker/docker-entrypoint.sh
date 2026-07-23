@@ -3,7 +3,7 @@ set -euo pipefail
 cd /var/www/html
 
 echo "[entrypoint] Waiting for database at ${DB_HOST}..."
-until mysqladmin ping -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" --silent; do
+uuntil mysqladmin ping -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" --skip-ssl --silent; do
   sleep 2
 done
 echo "[entrypoint] Database is reachable."
