@@ -1,17 +1,32 @@
-#!/bin/sh
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
+cd /var/www/html
 
-# If Flarum isn't installed yet in the shared volume/directory, install it via Composer
-if [ ! -f /var/www/html/public/index.php ]; then
-    echo "Flarum not found. Installing via Composer..."
-    cd /var/www/html
-    composer create-project flarum/flarum . --stability=beta --no-interaction
-    composer require fof/upload fof/best-answer huseyinfiliz/leaderboard --no-interaction
+echo "[entrypoint] Waiting for database at ${DB_HOST}..."
+until mysqladmin ping -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" --silent; do
+  sleep 2
+done
+echo "[entrypoint] Database is reachable."
+
+if [ ! -f config.php ]; then
+  echo "[entrypoint] No config.php — running Flarum installer..."
+  php flarum install --no-interaction \
+    --baseUrl="${APP_URL}" \
+    --databaseHost="${DB_HOST}" \
+    --databaseName="${DB_NAME}" \
+    --databaseUser="${DB_USER}" \
+    --databasePassword="${DB_PASS}" \
+    --adminUser="${FLARUM_ADMIN_USER:-admin}" \
+    --adminPassword="${FLARUM_ADMIN_PASSWORD:-changeme}" \
+    --adminEmail="${FLARUM_ADMIN_EMAIL:-admin@example.com}" \
+    --title="${FLARUM_FORUM_TITLE:-Community Forum}"
+
+  php flarum extension:enable fof-upload || true
+  php flarum extension:enable fof-best-answer || true
+  php flarum extension:enable huseyinfiliz-leaderboard || true
+else
+  echo "[entrypoint] Existing install — clearing cache."
+  php flarum cache:clear || true
 fi
 
-# Ensure correct permissions for web server
-chown -R www-data:www-data /var/www/html
-chmod -R 775 /var/www/html/storage /var/www/html/public
-
-# Execute the main command (Supervisord)
 exec "$@"
