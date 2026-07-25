@@ -46,9 +46,11 @@ else
   php flarum cache:clear || true
 fi
 
-# Ensure storage and asset permissions are always correct for image uploads
-echo "[entrypoint] Fixing storage and asset permissions..."
-chown -R www-data:www-data /var/www/html/storage /var/www/html/public/assets || true
-chmod -R 775 /var/www/html/storage /var/www/html/public/assets || true
+# Ensure storage, assets, and upload folders exist with correct permissions for www-data
+echo "[entrypoint] Fixing permissions for uploads and storage..."
+mkdir -p /var/www/html/storage/views /var/www/html/public/assets/uploads
+chown -R www-data:www-data /var/www/html/storage /var/www/html/public/assets
+chmod -R 775 /var/www/html/storage /var/www/html/public/assets
 
+echo "[entrypoint] Startup complete. Starting application..."
 exec "$@"
