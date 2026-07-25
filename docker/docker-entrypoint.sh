@@ -28,8 +28,8 @@ return [
         'strict'    => true,
         'engine'    => 'InnoDB',
     ],
-    'url'     => '${APP_URL}',
-    'paths'   => [
+    'url'      => '${APP_URL}',
+    'paths'    => [
         'api'   => 'api',
         'admin' => 'admin',
     ],
@@ -45,6 +45,13 @@ PHP
 else
   echo "[entrypoint] Existing install — clearing cache."
   php flarum cache:clear || true
+fi
+
+# Automatically sync and inject custom CSS from the frontend repository into Flarum database
+echo "[entrypoint] Checking for custom CSS updates..."
+if [ -f /var/www/html/frontend/style.css ]; then
+    php flarum tinker --execute="\Flarum\Settings\SettingsRepository::set('custom_css', file_get_contents('/var/www/html/frontend/style.css'));" || true
+    echo "[entrypoint] Custom CSS synchronized successfully!"
 fi
 
 exec "$@"
