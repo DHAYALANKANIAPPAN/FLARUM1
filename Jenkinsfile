@@ -27,8 +27,10 @@ node {
                         docker compose -f docker-compose.yml down --remove-orphans
                         docker rm -f flarum1-app flarum1-db-1 flarum1-nginx-1 || true
                         docker compose -f docker-compose.yml up -d --build
-                    EOF
+EOF
                 '''
+            }
+        }
             }
         }
     } finally {
