@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        EC2_IP = '54.196.68.171'
+        EC2_IP = '13.217.92.54'
     }
 
     stages {
@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.196.68.171 << 'EOF'
+                        ssh -o StrictHostKeyChecking=no ubuntu@13.217.92.54 << 'EOF'
                             if [ ! -d FLARUM1 ]; then
                                 git clone https://github.com/DHAYALANKANIAPPAN/FLARUM1.git
                             fi
@@ -24,9 +24,9 @@ pipeline {
                             git fetch origin main
                             git reset --hard origin/main
                             if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
-                            
+
                             mkdir -p frontend
-                            
+
                             docker compose -f docker-compose.yml down --remove-orphans
                             docker rm -f flarum1-app flarum1-db-1 flarum1-nginx-1 || true
                             docker compose -f docker-compose.yml up -d --build
