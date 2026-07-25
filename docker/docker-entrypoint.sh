@@ -11,7 +11,6 @@ echo "[entrypoint] Database is reachable."
 if [ ! -f config.php ]; then
   echo "[entrypoint] No config.php — generating automated configuration..."
   
-  # Write out the Flarum config.php file programmatically using environment variables
   cat <<PHP > config.php
 <?php
 return [
@@ -47,11 +46,9 @@ else
   php flarum cache:clear || true
 fi
 
-# Automatically sync and inject custom CSS from the frontend repository into Flarum database
-echo "[entrypoint] Checking for custom CSS updates..."
-if [ -f /var/www/html/frontend/style.css ]; then
-    php flarum tinker --execute="\Flarum\Settings\SettingsRepository::set('custom_css', file_get_contents('/var/www/html/frontend/style.css'));" || true
-    echo "[entrypoint] Custom CSS synchronized successfully!"
-fi
+# Ensure storage and asset permissions are always correct for image uploads
+echo "[entrypoint] Fixing storage and asset permissions..."
+chown -R www-data:www-data /var/www/html/storage /var/www/html/public/assets || true
+chmod -R 775 /var/www/html/storage /var/www/html/public/assets || true
 
 exec "$@"
