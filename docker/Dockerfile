@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 # Install system dependencies and PHP extensions required by Flarum
 RUN apk add --no-cache \
