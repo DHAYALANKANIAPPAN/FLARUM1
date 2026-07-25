@@ -25,7 +25,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      APP_URL: "http://54.196.68.171:8000"
+      APP_URL: "http://13.217.92.54:8000"
       DB_HOST: db
       DB_NAME: flarum
       DB_USER: flarum
