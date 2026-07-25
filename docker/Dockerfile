@@ -1,38 +1,38 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.2-fpm-alpine
 
+# Install system dependencies and PHP extensions required by Flarum
 RUN apk add --no-cache \
     bash \
-    curl \
+    git \
+    unzip \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
-    libzip-dev \
     icu-dev \
     oniguruma-dev \
-    mysql-client \
-    git \
-    unzip \
+    mariadb-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql mysqli zip intl mbstring opcache
+    && docker-php-ext-install -j$(nproc) \
+        gd \
+        pdo_mysql \
+        intl \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath
 
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-RUN composer create-project flarum/flarum . --no-interaction --no-dev --prefer-dist \
-    && composer require \
-        fof/upload \
-        fof/best-answer \
-        huseyinfiliz/leaderboard \
-        --no-interaction --no-update \
-    && composer update --no-dev --no-interaction --optimize-autoloader
+# Install Flarum via Composer if not already present, or copy codebase
+# (If your project pulls dependencies via composer, this handles it)
+RUN composer create-project flarum/flarum . --stability=beta
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 storage public/assets
-
+# Copy entrypoint script and make it executable
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 9000
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]
