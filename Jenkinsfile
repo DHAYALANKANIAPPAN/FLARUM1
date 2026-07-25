@@ -14,7 +14,7 @@ pipeline {
 
         stage('Deploy to Remote EC2') {
             steps {
-                sshagent(credentials: ['ec2-ssh-key']) {
+                sshagent(credentials: ['ubuntu']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@54.196.68.171 << 'EOF'
                             if [ ! -d FLARUM1 ]; then
@@ -23,14 +23,14 @@ pipeline {
                             cd FLARUM1
                             git fetch origin main
                             git reset --hard origin/main
-                            if [ ! -f .env ]; then cp .env.example .env; fi
+                            if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
                             
                             mkdir -p frontend
                             
                             docker compose -f docker-compose.yml down --remove-orphans
                             docker rm -f flarum1-app flarum1-db-1 flarum1-nginx-1 || true
                             docker compose -f docker-compose.yml up -d --build
-EOF
+                        EOF
                     '''
                 }
             }
