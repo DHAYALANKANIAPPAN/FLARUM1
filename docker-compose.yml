@@ -47,6 +47,7 @@ services:
     volumes:
       - flarum_public:/var/www/html/public:ro
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend:/usr/share/nginx/html/custom:ro
     restart: always
 
 volumes:
