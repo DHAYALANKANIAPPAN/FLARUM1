@@ -1,10 +1,8 @@
-# DevOps Student Forum 🚀
+# DevOps Student Forum 
 > An interactive web-based community platform and collaboration hub designed for students and DevOps learners, featuring threaded discussions, gamification badges, leaderboards, and automated CI/CD deployment pipelines.
 
 Built to foster peer-to-peer learning and technical collaboration, combining a robust forum engine with containerized workflows.
-
 ---
-
 ## What the Platform Offers
 
 ### Community & Discussions
