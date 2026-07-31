@@ -12,6 +12,8 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     ports:
       - "8080:8080"
+    networks:
+      - app-net
 
   prometheus:
     image: prom/prometheus:v2.51.0
@@ -22,6 +24,8 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
+    networks:
+      - app-net
 
   grafana:
     image: grafana/grafana:10.4.0
@@ -34,7 +38,13 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+    networks:
+      - app-net
 
 volumes:
   prometheus_data:
   grafana_data:
+
+networks:
+  app-net:
+    external: true
