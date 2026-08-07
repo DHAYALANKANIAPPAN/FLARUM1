@@ -1,56 +1,121 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
+
 cd /var/www/html
 
-echo "[entrypoint] Waiting for database at ${DB_HOST}..."
-until mysqladmin ping -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" --skip-ssl --silent; do
-  sleep 2
+echo "======================================="
+echo " Starting Flarum Container"
+echo "======================================="
+
+echo "Waiting for MariaDB..."
+
+until mysqladmin ping \
+    -h"${DB_HOST}" \
+    -u"${DB_USER}" \
+    -p"${DB_PASS}" \
+    --silent
+do
+    sleep 2
 done
-echo "[entrypoint] Database is reachable."
+
+echo "Database Ready."
+
+##########################################################
+# Generate config only once
+##########################################################
 
 if [ ! -f config.php ]; then
-  echo "[entrypoint] No config.php — generating automated configuration..."
-  
-  cat <<PHP > config.php
-<?php
-return [
-    'database' => [
-        'driver'    => 'mysql',
-        'host'      => '${DB_HOST}',
-        'database'  => '${DB_NAME}',
-        'username'  => '${DB_USER}',
-        'password'  => '${DB_PASS}',
-        'charset'   => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix'    => 'flarum_',
-        'port'      => '3306',
-        'strict'    => true,
-        'engine'    => 'InnoDB',
-    ],
-    'url'      => '${APP_URL}',
-    'paths'    => [
-        'api'   => 'api',
-        'admin' => 'admin',
-    ],
-];
-PHP
 
-  echo "[entrypoint] Running database migrations and enabling extensions..."
-  php flarum migrate || true
-  
-  php flarum extension:enable fof-upload || true
-  php flarum extension:enable fof-best-answer || true
-  php flarum extension:enable huseyinfiliz-leaderboard || true
-else
-  echo "[entrypoint] Existing install — clearing cache."
-  php flarum cache:clear || true
+cat > config.php <<EOF
+<?php
+
+return [
+
+    'debug' => false,
+
+    'database' => [
+
+        'driver' => 'mysql',
+
+        'host' => '${DB_HOST}',
+
+        'port' => 3306,
+
+        'database' => '${DB_NAME}',
+
+        'username' => '${DB_USER}',
+
+        'password' => '${DB_PASS}',
+
+        'charset' => 'utf8mb4',
+
+        'collation' => 'utf8mb4_unicode_ci',
+
+        'prefix' => '',
+
+        'strict' => false,
+
+        'engine' => 'InnoDB',
+
+    ],
+
+    'url' => '${APP_URL}',
+
+    'paths' => [
+
+        'api' => 'api',
+
+        'admin' => 'admin',
+
+    ],
+
+];
+EOF
+
 fi
 
-# Ensure storage, assets, and upload folders exist with correct permissions for www-data
-echo "[entrypoint] Fixing permissions for uploads and storage..."
-mkdir -p /var/www/html/storage/views /var/www/html/public/assets/uploads
-chown -R www-data:www-data /var/www/html/storage /var/www/html/public/assets
-chmod -R 775 /var/www/html/storage /var/www/html/public/assets
+##########################################################
+# Storage
+##########################################################
 
-echo "[entrypoint] Startup complete. Starting application..."
+mkdir -p storage
+
+mkdir -p storage/cache
+
+mkdir -p storage/logs
+
+mkdir -p storage/sessions
+
+mkdir -p storage/views
+
+mkdir -p public/assets
+
+mkdir -p public/assets/uploads
+
+##########################################################
+# Publish assets every startup
+##########################################################
+
+php flarum assets:publish || true
+
+##########################################################
+# Cache
+##########################################################
+
+php flarum cache:clear || true
+
+##########################################################
+# Permissions
+##########################################################
+
+chown -R www-data:www-data storage
+
+chown -R www-data:www-data public/assets
+
+chmod -R 775 storage
+
+chmod -R 775 public/assets
+
+echo "Container Ready."
+
 exec "$@"
