@@ -1,42 +1,33 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm
 
-# Install system dependencies required by Flarum and the extension installer
-RUN apk add --no-cache \
-    bash \
-    git \
-    unzip \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    icu-dev \
-    oniguruma-dev \
-    mariadb-client
+RUN apt-get update && apt-get install -y \
+    unzip git curl \
+    libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libwebp-dev \
+    libicu-dev libonig-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) pdo_mysql mysqli gd zip exif intl opcache \
+    && rm -rf /var/lib/apt/lists/*
 
-# Download the robust PHP extension installer utility
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions
-
-# Install all required PHP extensions safely using pre-compiled binaries/scripts
-RUN install-php-extensions \
-    gd \
-    pdo_mysql \
-    intl \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath
-
-# Install Composer globally
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
-# Install Flarum via Composer if not already present, or copy codebase
-RUN composer create-project flarum/flarum . --stability=beta
+# Install dependencies first for better layer caching, then copy the rest of the app.
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-# Copy entrypoint script and make it executable
+COPY . .
+
+RUN composer dump-autoload --optimize --no-dev
+
+# Ensure these exist in the image so the entrypoint's symlink step always has
+# a valid target directory, even on the very first container start.
+RUN mkdir -p storage public/assets \
+    && chown -R www-data:www-data /var/www/html
+
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+USER root
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]
