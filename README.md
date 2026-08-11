@@ -12,9 +12,7 @@ Built to foster peer-to-peer learning and technical collaboration, combining a r
 ### Gamification & Recognition
 * **Badges System:** Earn achievement badges (like question sharks and milestone awards) for active participation.
 * **Dynamic Leaderboard:** Real-time tracking of user points, best answers, and community rankings.
-
 ---
-
 ## Project Architecture & CI/CD Pipeline
 
 ```mermaid
