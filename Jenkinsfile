@@ -35,7 +35,7 @@ EOF
                 }
             }
         }
-    }
+}
 
     post {
         always {
